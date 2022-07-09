@@ -9,6 +9,8 @@ import { addClassMistake } from '../redux/action/mistake'
 import { RootState } from '../redux/reducer'
 import { DcpClassesReport, DcpReport, Faults } from '../redux/reducer/mistake'
 import { mainStyle } from './mainStyle'
+import AntDesign from 'react-native-vector-icons/AntDesign'
+import { showPoint } from '../ultil/ShowPoint';
 
 interface FaultInfo {
   regulationName: string,
@@ -23,6 +25,7 @@ const ClassReportList = () => {
   const navigation = useNavigation()
   const route = useRoute()
   const classInfo: any = route.params
+
   const faultsClass: any = dcpReport.dcpClassReports.find(item => item.classId === classInfo.id)
   const faultsInfo = faultsClass.faults.map((item: Faults) => {
     const faultInfo = listRegulationApi.find(fault => fault.id === item.regulationId)
@@ -34,6 +37,9 @@ const ClassReportList = () => {
     }
   })
   const listPointOfFault = faultsInfo.map((item: FaultInfo) => {
+    if (item.relatedStudentIds.length===0){
+      return item.point
+    }else
     return item.point * item.relatedStudentIds.length
   })
   const totalPoint = listPointOfFault.reduce(((acc: number, cur: number) => acc + cur), 0)
@@ -64,15 +70,19 @@ const ClassReportList = () => {
         )}
         style={styles.item} key={index}>
         <View style={styles.itemPoint}>
-          <Text style={styles.point}>{`- ${item.point * item.relatedStudentIds.length}`}</Text>
+          <Text style={styles.point}>{item.relatedStudentIds.length!==0?showPoint(-item.point * item.relatedStudentIds.length):showPoint(-item.point)}</Text>
         </View>
         <View style={styles.itemContent}>
           <Text style={styles.content}>{item.regulationName}</Text>
         </View>
         <TouchableOpacity
-          onPress={() => removeMistake(index)}
+          onPress={() => removeMistake(index)} style={styles.pd10}
         >
-          <Image source={require('../assets/icon/remove.png')} style={styles.iconRemove} />
+        <AntDesign
+            name={'closecircleo'}
+            color={"red"}
+            size={24}
+          /> 
         </TouchableOpacity>
       </TouchableOpacity>
     )
@@ -80,12 +90,12 @@ const ClassReportList = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header title="Vi phạm" />
+      <Header title="Chấm nề nếp" />
       <View style={styles.mainContainer}>
         <View style={styles.contentContainer}>
-          <Text style={styles.title}>{`Danh sách vi phạm ${classInfo.name}`}</Text>
-          <Text style={styles.totalPoint}>Tổng điểm trừ:
-          <Text style={styles.point}>{` - ${totalPoint}`}</Text>
+          <Text style={styles.title}>{`Danh sách chấm nề nếp ${classInfo.name}`}</Text>
+          <Text style={styles.totalPoint}>Tổng điểm:
+          <Text style={styles.point}>{showPoint(-totalPoint)}</Text>
           </Text>
           {faultsInfo?.map((item: FaultInfo, index: number) => _renderMistake(item, index))}
         </View>
@@ -93,7 +103,7 @@ const ClassReportList = () => {
           <TouchableOpacity
             onPress={() => navigation.dispatch(
               CommonActions.navigate({
-                name: 'HomeScreen',
+                name: 'BottomTab',
               })
             )}
             style={[mainStyle.buttonContainer, styles.buttonDone]}>
@@ -107,7 +117,7 @@ const ClassReportList = () => {
               })
             )}
             style={[mainStyle.buttonContainer, styles.buttonAdd]}>
-            <Text style={mainStyle.buttonTitle}>Thêm vi phạm</Text>
+            <Text style={mainStyle.buttonTitle}>Chấm nề nếp</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -122,13 +132,13 @@ const styles = StyleSheet.create({
   },
   mainContainer: {
     flex: 1,
-    paddingHorizontal: 30,
+    paddingHorizontal: 20,
     justifyContent: 'space-between'
   },
   title: {
     fontSize: fontSize.content,
     fontWeight: 'bold',
-    marginTop: 20,
+    marginTop: 16,
   },
   contentContainer: {
     flex: 1,
@@ -136,7 +146,7 @@ const styles = StyleSheet.create({
   totalPoint: {
     fontSize: fontSize.contentSmall,
     fontWeight: 'bold',
-    marginTop: 20,
+    marginTop: 16,
   },
   point: {
     color: 'red',
@@ -162,7 +172,7 @@ const styles = StyleSheet.create({
   },
   content: {
     fontSize: fontSize.contentSmall,
-    color: 'grey'
+    color: 'grey',
   },
   iconRemove: {
     tintColor: 'gray',
@@ -177,12 +187,15 @@ const styles = StyleSheet.create({
     marginBottom: 20
   },
   buttonDone: {
-    backgroundColor: color.blue,
+    backgroundColor: color.green,
     width: '40%'
   },
   buttonAdd: {
     backgroundColor: color.blueStrong,
     marginLeft: 20,
+  },
+  pd10: {
+    padding: 10
   },
 })
 

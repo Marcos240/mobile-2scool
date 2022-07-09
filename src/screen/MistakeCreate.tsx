@@ -1,6 +1,6 @@
 import { useNavigation, useRoute } from '@react-navigation/native'
 import React, { useEffect, useState } from 'react'
-import { Alert, Image, Modal, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native'
+import { Alert, Image, KeyboardAvoidingView, Modal, SafeAreaView,Platform, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native'
 import MultiSelect from 'react-native-multiple-select'
 import { useDispatch, useSelector } from 'react-redux'
 import { getStudent } from '../api/mistake'
@@ -13,7 +13,14 @@ import { addClassMistake } from '../redux/action/mistake'
 import { RootState } from '../redux/reducer'
 import { DcpReport } from '../redux/reducer/mistake'
 import { mainStyle } from './mainStyle'
+import AntDesign from 'react-native-vector-icons/AntDesign'
 
+var PlaceholderTextCriteriaColor = 'gray'
+var PlaceholderTextCriteriaFontWeight = 'normal'
+var PlaceholderTextRegulationColor = 'gray'
+var PlaceholderTextRegulationFontWeight = 'normal'
+var PlaceholderTextStudentColor = 'gray'
+var PlaceholderTextStudentFontWeight = 'normal'
 const MistakeCreate = () => {
   const navigation = useNavigation()
   const dcpReport = useSelector((state: RootState) => state.mistake)
@@ -25,7 +32,7 @@ const MistakeCreate = () => {
 
   const [listRegulation, setListRegulation] = useState<Regulation[]>([])
   const [listStudent, setListStudent] = useState<Student[]>([])
-  const [criteria, setCriteria] = useState('')
+  const [criteria,  setCriteria] = useState('')
   const [regulation, setRegulation] = useState('')
   const [studentMistake, setStudentMistake] = useState<Student[]>([])
 
@@ -34,7 +41,7 @@ const MistakeCreate = () => {
   }, [])
 
   useEffect(() => {
-    if (criteria === '') setListRegulation([])
+    if (criteria === '') setListRegulation(listRegulationApi)
     else setListRegulation(listRegulationApi.filter(item => item.criteriaId === criteria))
   }, [criteria])
 
@@ -61,27 +68,41 @@ const MistakeCreate = () => {
     const newDcpClassReports = newDcpReport.dcpClassReports
     newDcpClassReports[indexClassMistake] = classMistake
     newDcpReport.dcpClassReports = newDcpClassReports
+    PlaceholderTextCriteriaColor = 'gray'
+    PlaceholderTextCriteriaFontWeight = 'normal'
+    PlaceholderTextRegulationColor = 'gray'
+    PlaceholderTextRegulationFontWeight = 'normal'
+    PlaceholderTextStudentColor = 'gray'
+    PlaceholderTextStudentFontWeight = 'normal'
     dispatch(addClassMistake(newDcpReport))
     navigation.goBack()
   }
 
   const onSelectStudentChange = (e: any) => {
+    PlaceholderTextStudentColor = 'black'
+    PlaceholderTextStudentFontWeight = 'bold'
     setStudentMistake(e)
   }
 
   const onSelectCriteria = (e: any) => {
+    PlaceholderTextCriteriaColor = 'black'
+    PlaceholderTextCriteriaFontWeight = 'bold'
+    PlaceholderTextRegulationColor = 'gray'
+    PlaceholderTextRegulationFontWeight = 'normal'
     setCriteria(e[0])
   }
 
   const onSelectRegulation = (e: any) => {
+    PlaceholderTextRegulationColor = 'black'
+    PlaceholderTextRegulationFontWeight = 'bold'
     setRegulation(e[0])
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Header title="Thêm vi phạm" />
-      <View style={styles.mainContainer}>
-        <View style={styles.contentContainer}>
+    <KeyboardAvoidingView  behavior={Platform.OS === "ios" ? "padding" : null}  style={styles.container}>
+      <Header title="Chi tiết chấm nề nếp" />
+      <ScrollView style={styles.mainContainer} showsVerticalScrollIndicator={false}>
+        <View style={[styles.contentContainer,{paddingLeft: 16, paddingRight: 16}]}>
           <MultiSelect
             fixedHeight
             single
@@ -90,11 +111,15 @@ const MistakeCreate = () => {
             uniqueKey='id'
             onSelectedItemsChange={onSelectCriteria}
             selectedItems={[criteria]}
-            selectText='Tiêu chí'
+            selectText='Chọn tiêu chí'
             searchInputPlaceholderText='Tên tiêu chí'
-            styleTextDropdown={styles.criteriaName}
-            styleTextDropdownSelected={styles.criteriaName}
-            onChangeInput={(text) => console.warn(text)}
+            styleTextDropdownSelected={{ fontSize: 15,
+              fontWeight: PlaceholderTextCriteriaFontWeight,
+              height: 21,
+              color: PlaceholderTextCriteriaColor,
+              marginTop: 0,
+              marginBottom: 0 }}
+            onChangeInput={(text) => console.log(text)}
             tagRemoveIconColor='gray'
             tagBorderColor='gray'
             tagTextColor='black'
@@ -102,7 +127,7 @@ const MistakeCreate = () => {
             selectedItemIconColor='red'
             itemTextColor='#000'
             displayKey='name'
-            submitButtonColor='#CCC'
+            submitButtonColor='#2CC97E'
             submitButtonText='Submit'
             searchInputStyle={{ fontSize: fontSize.contentSmall }}
           />
@@ -115,12 +140,15 @@ const MistakeCreate = () => {
             uniqueKey='id'
             onSelectedItemsChange={onSelectRegulation}
             selectedItems={[regulation]}
-            selectText='Tên vi phạm'
-            searchInputPlaceholderText='Tên vi phạm'
-            noItemsText='Vui lòng chọn tiêu chí'
-            styleTextDropdown={styles.criteriaName}
-            styleTextDropdownSelected={styles.criteriaName}
-            onChangeInput={(text) => console.warn(text)}
+            selectText='Chọn quy định'
+            searchInputPlaceholderText='Tên quy định'
+            noItemsText='Không có quy định nào'
+            styleTextDropdownSelected={{ fontSize: 15,
+              fontWeight: PlaceholderTextRegulationFontWeight,
+              height: 21,
+              color: PlaceholderTextRegulationColor,
+              marginTop: 0,
+              marginBottom: 0 }}
             tagRemoveIconColor='gray'
             tagBorderColor='gray'
             tagTextColor='black'
@@ -128,7 +156,7 @@ const MistakeCreate = () => {
             selectedItemIconColor='red'
             itemTextColor='#000'
             displayKey='name'
-            submitButtonColor='#CCC'
+            submitButtonColor='#2CC97E'
             submitButtonText='Submit'
             searchInputStyle={{ fontSize: fontSize.contentSmall }}
           />
@@ -138,11 +166,14 @@ const MistakeCreate = () => {
             styleMainWrapper={styles.studentContainer}
             onSelectedItemsChange={onSelectStudentChange}
             selectedItems={studentMistake}
-            selectText='Học sinh vi phạm'
+            selectText = 'Học sinh liên quan'
             searchInputPlaceholderText='Tên học sinh'
-            styleTextDropdown={styles.criteriaName}
-            styleTextDropdownSelected={styles.criteriaName}
-            onChangeInput={(text) => console.warn(text)}
+            styleTextDropdownSelected={{ fontSize: 15,
+              fontWeight: PlaceholderTextStudentFontWeight,
+              height: 21,
+              color: PlaceholderTextStudentColor,
+              marginTop: 0,
+              marginBottom: 0 }}
             tagRemoveIconColor='gray'
             tagBorderColor='gray'
             tagTextColor='black'
@@ -150,18 +181,25 @@ const MistakeCreate = () => {
             selectedItemIconColor='red'
             itemTextColor='#000'
             displayKey='name'
-            submitButtonColor='#CCC'
+            submitButtonColor='#2CC97E'
             submitButtonText='Submit'
             searchInputStyle={{ fontSize: fontSize.contentSmall }}
           />
         </View>
+        <View style={{ height: 80, width: widthDevice, justifyContent: 'center', alignItems: 'center', padding: 60}}>
+        <TouchableOpacity
+          onPress={() => addNewMistake()}
+          style={[mainStyle.buttonContainer, styles.buttonAdd]}>
+          <AntDesign
+            name={'plus'}
+            color={"white"}
+            size={30}
+          />
+          <Text style={[mainStyle.buttonTitle, { fontSize: 18, marginHorizontal: 12 }]}>Chấm nề nếp</Text>
+        </TouchableOpacity>
       </View>
-      <TouchableOpacity
-        onPress={() => addNewMistake()}
-        style={[mainStyle.buttonContainer, styles.buttonAdd]}>
-        <Text style={mainStyle.buttonTitle}>Thêm vi phạm</Text>
-      </TouchableOpacity>
-    </SafeAreaView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   )
 }
 
@@ -174,26 +212,30 @@ const styles = StyleSheet.create({
   },
   mainContainer: {
     flex: 1,
-    flexDirection: 'column'
+    flexDirection: 'column',
+    backgroundColor: color.background,
   },
   contentContainer: {
     flex: 1,
+    width: widthDevice,
   },
   criteria: {
-    marginTop: '15%',
-    width: widthDevice * 80 / 100,
+    marginTop: '4%',
+    width: widthDevice * 92 / 100,
     backgroundColor: 'white',
     borderColor: 'gray',
     borderRadius: 5,
-    borderWidth: 0.5,
-    paddingLeft: 15,
-    paddingRight: 5,
+    // borderWidth: 0.5,
+    paddingLeft: 16,
+    paddingRight: 4,
   },
-  criteriaName: {
-    fontSize: fontSize.contentSmall,
+  criteriaName1: {
+    fontSize: 30,
     fontWeight: 'bold',
+    height: 21,
     color: 'black',
-    marginTop: 0
+    marginTop: 0,
+    marginBottom: 0,
   },
   iconNext: {
 
@@ -203,15 +245,13 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   studentContainer: {
-    marginTop: '15%',
+    marginTop: '4%',
     backgroundColor: 'white',
-    borderColor: 'gray',
     borderRadius: 5,
-    borderWidth: 0.5,
     paddingLeft: 15,
     paddingRight: 5,
-    width: widthDevice * 80 / 100,
-    minHeight: 160
+    width: widthDevice * 92 / 100,
+    minHeight: 400
   },
   studentButton: {
     flexDirection: 'row',
@@ -256,10 +296,9 @@ const styles = StyleSheet.create({
   },
   buttonAdd: {
     backgroundColor: color.blueStrong,
-    marginBottom: 20,
-    position: 'absolute',
-    top: heightDevice - 70,
-    width: '80%'
+    flexDirection: 'row',
+    marginBottom: 10,
+     width:  widthDevice * 92 / 100,
   }
 })
 

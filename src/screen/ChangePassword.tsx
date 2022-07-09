@@ -1,9 +1,9 @@
 import { CommonActions, useNavigation } from '@react-navigation/native'
 import React, { useState } from 'react'
-import { Alert, Image, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Alert, Image, SafeAreaView, ScrollView, StyleSheet, Platform, Text, TextInput, TouchableOpacity, View , KeyboardAvoidingView} from 'react-native'
 import { changePassword } from '../api/user'
 import { color } from '../assets/color'
-import { fontSize } from '../assets/size'
+import { fontSize, heightDevice } from '../assets/size'
 import Header from '../component/Header'
 import { mainStyle } from './mainStyle'
 
@@ -23,8 +23,8 @@ const ChangePassword = () => {
           name: 'UserScreen',
         })
       )
-    } catch (error) {
-      if (error.response.status === 400) Alert.alert("Error", "Current password is incorrect")
+    } catch (error:any) {
+      if (error?.response.status === 400) Alert.alert("Error", "Current password is incorrect")
       else Alert.alert("Error", "Change password fail")
     }
   }
@@ -75,9 +75,10 @@ const ChangePassword = () => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <KeyboardAvoidingView  behavior={Platform.OS === "ios" ? "padding" : null} style={styles.container}>
       <Header title="Đổi mật khẩu" />
-      <View style={styles.mainContainer}>
+      <ScrollView >
+      <View style={[styles.mainContainer, {height:heightDevice-130}]}>
         {_renderCurPassword()}
         {_renderNewPassword()}
         {_renderNewPasswordConfirm()}
@@ -87,7 +88,8 @@ const ChangePassword = () => {
         style={[mainStyle.buttonContainer, styles.buttonSend]}>
         <Text style={mainStyle.buttonTitle}>Đổi mật khẩu</Text>
       </TouchableOpacity>
-    </SafeAreaView>
+      </ScrollView>
+      </KeyboardAvoidingView>
   )
 }
 
@@ -122,8 +124,7 @@ const styles = StyleSheet.create({
     borderColor: color.border
   },
   buttonSend: {
-    marginBottom: 20,
-    marginHorizontal: 20
+    marginHorizontal: 20,
   },
   image: {
     width: 100,

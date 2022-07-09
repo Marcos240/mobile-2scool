@@ -12,12 +12,16 @@ import { addClassMistake } from '../redux/action/mistake'
 import { RootState } from '../redux/reducer'
 import { DcpReport } from '../redux/reducer/mistake'
 import { mainStyle } from './mainStyle'
-
+import { Regulation} from '../model/Mistake'
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
+var PlaceholderTextRegulationColor = 'black'
+var PlaceholderTextRegulationFontWeight = 'bold'
 const MistakeCreate = () => {
   const navigation = useNavigation()
   const dcpReport = useSelector((state: RootState) => state.mistake)
   const listRegulation = useSelector((state: RootState) => state.regulation)
   const listCriteria = useSelector((state: RootState) => state.criteria)
+  const [listRegulation1, setListRegulation1] = useState<Regulation[]>([])
   const dispatch = useDispatch()
   const route = useRoute()
   const { classInfo, fault, indexFault }: any = route.params
@@ -29,24 +33,31 @@ const MistakeCreate = () => {
   const [studentMistake, setStudentMistake] = useState<Student[]>(fault.relatedStudentIds)
   const [modalType, setModalType] = useState<string | null>(null)
   const [point, setPoint] = useState(fault.point)
-  const [isEdit, setIsEdit] = useState(false)
 
   useEffect(() => {
     initStudent()
   }, [])
+  useEffect(()=>{
+  const dataRegulation:any = listRegulation.find(item => item.id === fault?.regulationId);
+  setCriteria(dataRegulation?.criteriaId);
+  setListRegulation1(listRegulation.filter((item:any) => item.criteriaId === dataRegulation?.criteriaId));
+  },[])
+
 
   const initStudent = async () => {
     try {
       const res: any = await getStudent(classInfo.id)
       setListStudent(res.data.students)
     } catch (err) {
-      console.log('err3')
       Alert.alert('Error')
     }
   }
+  useEffect(() => {
+    if (criteria === '') setListRegulation1(listRegulation)
+    else setListRegulation1(listRegulation.filter(item => item.criteriaId === criteria))
+  }, [criteria])
 
   const editMistake = () => {
-    if (!isEdit) return setIsEdit(true)
     if (regulation === '') return Alert.alert('Thông báo', 'Vui lòng chọn vi phạm')
     const mistake = {
       regulationId: regulation,
@@ -66,10 +77,14 @@ const MistakeCreate = () => {
   }
 
   const onSelectCriteria = (e: any) => {
+    PlaceholderTextRegulationColor = 'gray'
+    PlaceholderTextRegulationFontWeight = 'normal'
     setCriteria(e[0])
   }
 
   const onSelectRegulation = (e: any) => {
+    PlaceholderTextRegulationColor = 'black'
+    PlaceholderTextRegulationFontWeight = 'bold'
     setRegulation(e[0])
   }
 
@@ -79,9 +94,9 @@ const MistakeCreate = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header title="Chi tiết vi phạm" />
-      <View style={styles.mainContainer}>
-        <View style={styles.contentContainer}>
+      <Header title="Chi tiết chấm nề nếp" />
+      <ScrollView style={styles.mainContainer} showsVerticalScrollIndicator={false}>
+      <View style={[styles.contentContainer,{paddingLeft: 16, paddingRight: 16}]}>
           <MultiSelect
             fixedHeight
             single
@@ -90,7 +105,7 @@ const MistakeCreate = () => {
             uniqueKey='id'
             onSelectedItemsChange={onSelectCriteria}
             selectedItems={[criteria]}
-            selectText='Tiêu chí'
+            selectText='Chọn tiêu chí'
             searchInputPlaceholderText='Tên tiêu chí'
             styleTextDropdown={styles.criteriaName}
             styleTextDropdownSelected={styles.criteriaName}
@@ -102,7 +117,7 @@ const MistakeCreate = () => {
             selectedItemIconColor='red'
             itemTextColor='#000'
             displayKey='name'
-            submitButtonColor='#CCC'
+            submitButtonColor='#2CC97E'
             submitButtonText='Submit'
             searchInputStyle={{ fontSize: fontSize.contentSmall }}
           />
@@ -111,16 +126,19 @@ const MistakeCreate = () => {
             fixedHeight
             single
             styleMainWrapper={styles.criteria}
-            items={listRegulation}
+            items={listRegulation1}
             uniqueKey='id'
             onSelectedItemsChange={onSelectRegulation}
             selectedItems={[regulation]}
-            selectText='Tên vi phạm'
-            searchInputPlaceholderText='Tên vi phạm'
-            noItemsText='Vui lòng chọn tiêu chí'
-            styleTextDropdown={styles.criteriaName}
-            styleTextDropdownSelected={styles.criteriaName}
-            onChangeInput={(text) => console.warn(text)}
+            selectText='Chọn quy định'
+            searchInputPlaceholderText='Tên quy định'
+            noItemsText='Không có quy định nào'
+            styleTextDropdownSelected={{ fontSize: 15,
+              fontWeight: PlaceholderTextRegulationFontWeight,
+              height: 21,
+              color: PlaceholderTextRegulationColor,
+              marginTop: 0,
+              marginBottom: 0 }}
             tagRemoveIconColor='gray'
             tagBorderColor='gray'
             tagTextColor='black'
@@ -128,7 +146,7 @@ const MistakeCreate = () => {
             selectedItemIconColor='red'
             itemTextColor='#000'
             displayKey='name'
-            submitButtonColor='#CCC'
+            submitButtonColor='#2CC97E'
             submitButtonText='Submit'
             searchInputStyle={{ fontSize: fontSize.contentSmall }}
           />
@@ -139,7 +157,7 @@ const MistakeCreate = () => {
             styleMainWrapper={styles.studentContainer}
             onSelectedItemsChange={onSelectStudentChange}
             selectedItems={studentMistake}
-            selectText='Học sinh vi phạm'
+            selectText='Học sinh liên quan'
             searchInputPlaceholderText='Tên học sinh'
             styleTextDropdown={styles.criteriaName}
             styleTextDropdownSelected={styles.criteriaName}
@@ -151,21 +169,27 @@ const MistakeCreate = () => {
             selectedItemIconColor='red'
             itemTextColor='#000'
             displayKey='name'
-            submitButtonColor='#CCC'
+            submitButtonColor='#2CC97E'
             submitButtonText='Submit'
             searchInputStyle={{ fontSize: fontSize.contentSmall }}
           />
 
         </View>
-      </View>
+      </ScrollView>
       <TouchableOpacity
         onPress={() => editMistake()}
         style={[mainStyle.buttonContainer, styles.buttonAdd]}>
-        <Text style={mainStyle.buttonTitle}>{isEdit ? 'Hoàn thành' : 'Cập nhật'}</Text>
+          <MaterialCommunityIcons
+          name={'update'}
+          color={"white"}
+          size={30}
+        />
+        <Text style={[mainStyle.buttonTitle,{ fontSize: 18, marginHorizontal: 12 }]}>Cập nhật</Text>
       </TouchableOpacity>
     </SafeAreaView>
   )
 }
+
 
 const styles = StyleSheet.create({
   container: {
@@ -176,26 +200,30 @@ const styles = StyleSheet.create({
   },
   mainContainer: {
     flex: 1,
-    flexDirection: 'column'
+    flexDirection: 'column',
+    backgroundColor: color.background,
   },
   contentContainer: {
     flex: 1,
+    width: widthDevice,
   },
   criteria: {
-    marginTop: '15%',
-    width: widthDevice * 80 / 100,
+    marginTop: '4%',
+    width: widthDevice * 92 / 100,
     backgroundColor: 'white',
     borderColor: 'gray',
     borderRadius: 5,
-    borderWidth: 0.5,
-    paddingLeft: 15,
-    paddingRight: 5,
+    // borderWidth: 0.5,
+    paddingLeft: 16,
+    paddingRight: 4,
   },
   criteriaName: {
-    fontSize: fontSize.contentSmall,
+    fontSize: 15,
     fontWeight: 'bold',
+    height: 21,
     color: 'black',
-    marginTop: 0
+    marginTop: 0,
+    marginBottom: 0,
   },
   iconNext: {
 
@@ -205,15 +233,13 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   studentContainer: {
-    marginTop: '15%',
+    marginTop: '4%',
     backgroundColor: 'white',
-    borderColor: 'gray',
     borderRadius: 5,
-    borderWidth: 0.5,
     paddingLeft: 15,
     paddingRight: 5,
-    width: widthDevice * 80 / 100,
-    minHeight: 160
+    width: widthDevice * 92 / 100,
+    minHeight: 400
   },
   studentButton: {
     flexDirection: 'row',
@@ -258,10 +284,9 @@ const styles = StyleSheet.create({
   },
   buttonAdd: {
     backgroundColor: color.blueStrong,
-    marginBottom: 20,
-    position: 'absolute',
-    top: heightDevice - 70,
-    width: '80%'
+    flexDirection: 'row',
+    marginBottom: 10,
+     width:  widthDevice * 92 / 100,
   }
 })
 

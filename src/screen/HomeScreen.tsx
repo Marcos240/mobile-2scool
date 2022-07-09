@@ -7,6 +7,7 @@ import { getCriteria, getRegulation } from '../api/mistake'
 import { color } from '../assets/color'
 import { fontSize, widthDevice } from '../assets/size'
 import HeaderMain from '../component/HeaderMain'
+import LoadingBase from '../component/LoadingBase'
 import { Class } from '../model/Class'
 import { addCriteria } from '../redux/action/criteria'
 import { addClassMistake } from '../redux/action/mistake'
@@ -18,14 +19,18 @@ const HomeScreen = () => {
   const dispatch = useDispatch()
   const navigation = useNavigation()
   const dcpReport = useSelector((state: RootState) => state.mistake)
+  const roleUser = useSelector((state: RootState) => state.roleUser)
   const [search, setSearch] = useState('')
   const [classes, setClasses] = useState<Class[]>([])
   const [listClass, setListClass] = useState<Class[]>([])
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
+    setIsLoading(true);
     initClass()
     initCriteria()
     initRegulation()
+    setIsLoading(false);
   }, [])
 
   const initClass = async () => {
@@ -74,19 +79,18 @@ const HomeScreen = () => {
   }
 
   const _renderItem = (item: Class) => {
-    return (
-      <View style={styles.classContainer}>
-        <Text style={styles.class}>{item.name}</Text>
-        <TouchableOpacity
-          onPress={() => navigation.dispatch(
+    return (      
+       <TouchableOpacity onPress={() => navigation.dispatch(
             CommonActions.navigate({
               name: 'ClassReportList',
               params: item
             })
           )}>
-          <Image source={require('../assets/icon/edit.png')} />
+          <View style={styles.classContainer}>
+            <Text style={styles.class}>{item.name}</Text>
+            <Image source={require('../assets/icon/edit.png')} />
+          </View>
         </TouchableOpacity>
-      </View>
     )
   }
 
@@ -106,7 +110,6 @@ const HomeScreen = () => {
         id: item.id
       }
     })
-
     const newSearchClass = newClasses.filter(item => item.name.includes(newValue) === true)
     const newListClass: any[] = newSearchClass.map(item => {
       const newClass = listClass.find(itemChild => itemChild.id === item.id)
@@ -115,13 +118,23 @@ const HomeScreen = () => {
     setClasses(newListClass)
   }
 
+  if(!roleUser?.CreateNewDcpReport &&roleUser?.CreateNewLRReport)
+{return(
+  <SafeAreaView style={styles.container}>    
+      <HeaderMain
+        title="Trang chủ"
+      />
+      <Text style={{alignSelf:'center', marginTop:10, textAlignVertical:'center', fontStyle:'italic'}}>Bạn không có quyền truy cập</Text>
+      </SafeAreaView>
+)}
   return (
     <SafeAreaView style={styles.container}>
+           <LoadingBase visible={isLoading} />
       <HeaderMain
         title="Trang chủ"
       />
       <View style={styles.mainContainer}>
-        <Text style={styles.mainTitle}>Danh sách chấm vi phạm</Text>
+        <Text style={styles.mainTitle}>Danh sách lớp chấm nề nếp</Text>
         <View style={styles.searchInput}>
           <Image source={require('../assets/icon/search.png')} style={styles.iconSearch} />
           <TextInput
@@ -131,7 +144,7 @@ const HomeScreen = () => {
             onChangeText={(value: string) => _setSearch(value)}
           />
         </View>
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1}}>
           <FlatList
             data={classes}
             keyExtractor={item => item.id}
@@ -174,22 +187,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    width: widthDevice * 80 / 100,
+    width: widthDevice * 90 / 100,
     height: 45,
     backgroundColor: 'white',
     color: 'black',
     marginTop: 20,
     borderRadius: 5,
-    paddingHorizontal: 15
+    paddingHorizontal: 15,
+    borderWidth: 0.2,
+    borderColor: 'grey'
   },
   classContainer: {
-    width: widthDevice * 80 / 100,
+    width: widthDevice * 90 / 100,
     backgroundColor: 'white',
     paddingHorizontal: 30,
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 10,
-    height: 55,
+    height: 50,
     alignItems: 'center',
     borderRadius: 10,
     borderWidth: 0.5,
@@ -205,7 +220,8 @@ const styles = StyleSheet.create({
   iconSend: {
     width: 55,
     height: 55,
-    margin: 30
+    margin: 20,
+    marginBottom: 30
   }
 });
 
